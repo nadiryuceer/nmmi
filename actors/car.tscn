@@ -1,0 +1,31 @@
+[gd_scene load_steps=6 format=3 uid="uid://b58g5vrxmf6d"]
+
+[ext_resource type="Script" uid="uid://cseklhlyew1mn" path="res://core/vehicle_controller.gd" id="1_ocm8f"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_apvud"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ocm8f"]
+
+[sub_resource type="Gradient" id="Gradient_ocm8f"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_o7c0y"]
+gradient = SubResource("Gradient_ocm8f")
+
+[node name="Car" type="CharacterBody3D"]
+script = ExtResource("1_ocm8f")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.3, 0, 0, 0, 1.2, 0, 0, 0)
+mesh = SubResource("BoxMesh_apvud")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.3, 0, 0, 0, 1.2, 0, 0, 0)
+shape = SubResource("BoxShape3D_ocm8f")
+
+[node name="GroundRay" type="RayCast3D" parent="."]
+transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+visible = false
+texture = SubResource("GradientTexture2D_o7c0y")

@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://bc7hix44b6a0n"]
+
+[node name="AiCar" type="Node3D"]

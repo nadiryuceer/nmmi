@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://nxrolsj4p4bx"]
+
+[ext_resource type="PackedScene" uid="uid://b58g5vrxmf6d" path="res://actors/car.tscn" id="1_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://75ogyg5sl3hh" path="res://tracks/test_track.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://bbbqgry8ofnx2" path="res://core/camera_rig.tscn" id="3_h2yge"]
+
+[node name="Main" type="Node3D"]
+
+[node name="Car" parent="." instance=ExtResource("1_0xm2m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+
+[node name="TestTrack" parent="." instance=ExtResource("2_h2yge")]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 0, 0)
+light_energy = 2.0
+
+[node name="CameraRig" parent="." node_paths=PackedStringArray("players") instance=ExtResource("3_h2yge")]
+height = 12.0
+follow_speed = 6.0
+base_zoom = 12.0
+max_zoom = 26.0
+zoom_speed = 4.0
+elimination_margin = 1.2
+elimination_delay = 1.0
+players = [NodePath("../Car"), NodePath("../Car2")]
+
+[node name="Car2" parent="." instance=ExtResource("1_0xm2m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.3, 2)
