@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="NMMV4"
+config/name="NMMI"
 run/main_scene="uid://nxrolsj4p4bx"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"

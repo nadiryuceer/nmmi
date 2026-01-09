@@ -1,3 +1,29 @@
-[gd_scene format=3 uid="uid://dabj8peeucvi1"]
+[gd_scene load_steps=4 format=3 uid="uid://dabj8peeucvi1"]
 
-[node name="Kitchen" type="Node3D"]
+[ext_resource type="PackedScene" uid="uid://p4dnlqcoqrr7" path="res://tracks/elements/floor.tscn" id="1_2w1ao"]
+[ext_resource type="PackedScene" uid="uid://hop0w5b0vf0" path="res://tracks/elements/wall.tscn" id="1_7r3vr"]
+[ext_resource type="PackedScene" uid="uid://psrsrnfllbyw" path="res://tracks/elements/ramp.tscn" id="3_2w1ao"]
+
+[node name="Track" type="Node3D"]
+
+[node name="Floor" parent="." instance=ExtResource("1_2w1ao")]
+transform = Transform3D(30, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0)
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="North" parent="Walls" instance=ExtResource("1_7r3vr")]
+transform = Transform3D(30, 0, 0, 0, 5, 0, 0, 0, 1, 0, 2.5, -15)
+
+[node name="South" parent="Walls" instance=ExtResource("1_7r3vr")]
+transform = Transform3D(30, 0, 0, 0, 5, 0, 0, 0, 1, 0, 2.5, 15)
+
+[node name="East" parent="Walls" instance=ExtResource("1_7r3vr")]
+transform = Transform3D(1, 0, 0, 0, 5, 0, 0, 0, 30, 15, 2.5, 0)
+
+[node name="West" parent="Walls" instance=ExtResource("1_7r3vr")]
+transform = Transform3D(1, 0, 0, 0, 5, 0, 0, 0, 30, -15, 2.5, 0)
+
+[node name="Elements" type="Node3D" parent="."]
+
+[node name="Ramp" parent="Elements" instance=ExtResource("3_2w1ao")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)

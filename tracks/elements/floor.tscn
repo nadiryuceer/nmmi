@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://p4dnlqcoqrr7"]
+
+[ext_resource type="Texture2D" uid="uid://cfqlhernubpne" path="res://assets/Textures/interior_tiles/interior_tiles_diff_4k.jpg" id="1_vlvhp"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_asr1r"]
+albedo_texture = ExtResource("1_vlvhp")
+uv1_scale = Vector3(4, 4, 4)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_d13ru"]
+material = SubResource("StandardMaterial3D_asr1r")
+size = Vector2(1, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ej3x2"]
+size = Vector3(1, 0.2, 1)
+
+[node name="Floor" type="StaticBody3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_d13ru")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("BoxShape3D_ej3x2")
