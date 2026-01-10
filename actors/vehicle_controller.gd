@@ -1,15 +1,25 @@
 extends CharacterBody3D
 
-@export var acceleration := 22.0
-@export var max_speed := 20.0
-@export var steering_speed := 3.0
-@export var grip := 9.0
-@export var drift_grip := 3.5
+@export var acceleration := 6.5
+@export var max_speed := 6
+@export var steering_speed := 3.2
+@export var grip := 18.0
 @export var boost_force := 35.0
-@export var drag := 4.0
+@export var drag := 6.0
+
+@export var steering_drag := 2.2
+@export var steering_drag_boosted := 1.2
+
 
 @export var wall_speed_loss := 0.85   # NEW: how hard walls kill speed
 @export var min_stop_speed := 0.6     # NEW: snap to zero below this
+
+@export var boost_max_speed := 8.5
+@export var boost_acceleration := 14.0
+@export var boost_steering_multiplier := 0.35
+
+var boosting := false
+
 
 @export var controllable := true
 @export var can_be_eliminated := true
@@ -25,6 +35,8 @@ var throttle := 0.0
 var vertical_velocity := 0.0
 
 @export var align_speed := 8.0
+
+@export var air_steering_multiplier := 0.25
 
 
 
@@ -53,6 +65,7 @@ func handle_input(delta: float) -> void:
 		Input.get_action_strength("accelerate")
 		- Input.get_action_strength("brake")
 	)
+
 	throttle = accel_input
 
 	steering_input = (
@@ -60,21 +73,43 @@ func handle_input(delta: float) -> void:
 		- Input.get_action_strength("steer_right")
 	)
 
+	boosting = Input.is_action_pressed("boost") and abs(current_speed) > 2.0
+	if not is_on_floor():
+		boosting = false
+
+
 	# --- SPEED CONTROL ---
-	if abs(accel_input) > 0.01:
-		current_speed += accel_input * acceleration * delta
-	else:
-		# Passive drag only when no throttle
-		current_speed = move_toward(current_speed, 0.0, drag * delta)
-
-	current_speed = clamp(current_speed, -max_speed * 0.5, max_speed)
-
-	# Boost
-	if Input.is_action_pressed("boost"):
-		current_speed = min(
-			current_speed + boost_force * delta,
-			max_speed * 1.5
+	if boosting:
+		current_speed = move_toward(
+			current_speed,
+			boost_max_speed * sign(current_speed if current_speed != 0 else 1.0),
+			boost_acceleration * delta
 		)
+	else:
+		current_speed += accel_input * acceleration * delta
+		current_speed = clamp(current_speed, -max_speed * 0.5, max_speed)
+
+	# Strong drag when no throttle
+	if abs(throttle) < 0.05 and not boosting:
+		current_speed = move_toward(current_speed, 0.0, drag * delta)
+	
+	# --- SPEED LOSS FROM HARD STEERING ---
+	if is_on_floor() and abs(throttle) > 0.05:
+		var steer_amount : float = abs(steering_input)
+
+		if steer_amount > 0.1:
+			var drag_strength := steering_drag_boosted if boosting else steering_drag
+
+			# Scale loss by speed (no loss at very low speed)
+			var speed_factor : float = clamp(abs(current_speed) / max_speed, 0.0, 1.0)
+
+			current_speed = move_toward(
+				current_speed,
+				0.0,
+				steer_amount * drag_strength * speed_factor * delta
+			)
+
+
 
 
 # ---------------- MOVEMENT ----------------
@@ -89,43 +124,61 @@ func apply_movement(delta: float) -> void:
 		if vertical_velocity < 0.0:
 			vertical_velocity = 0.0
 
-	# Rotation (grounded steering)
-	if on_floor and abs(current_speed) > 0.1:
-		var speed_ratio : float = abs(current_speed) / max_speed
-		var steer_dir : float = sign(current_speed)
-		rotation.y += steering_input * steering_speed * delta * speed_ratio * steer_dir
+	var steer_multiplier := 1.0
+
+	if boosting:
+		steer_multiplier = boost_steering_multiplier
+	elif not is_on_floor():
+		steer_multiplier = air_steering_multiplier
+
+	var speed_ratio : float = abs(current_speed) / max_speed
+	var steer_dir : float = sign(current_speed)
+	rotation.y += (
+		steering_input
+		* steering_speed
+		* steer_multiplier
+		* delta
+		* speed_ratio
+		* steer_dir
+	)
+
 
 	# Forward direction
 	var forward := -transform.basis.z.normalized()
-	var target_velocity := forward * current_speed
 
-	# Lateral drift
+	# Target forward velocity ONLY
+	var target_forward := forward * current_speed
+
+	# Strong lateral damping (MMV4 feel)
 	var lateral := velocity - velocity.project(forward)
-	lateral.y = 0.0  # IMPORTANT: never keep Y drift
+	lateral.y = 0.0
 
-	var grip_value := drift_grip if Input.is_action_pressed("boost") else grip
+	var lateral_grip := grip
 
-	if abs(throttle) < 0.1:
-		grip_value *= 2.5
+	if boosting:
+		lateral_grip *= 8.0
+	elif not is_on_floor():
+		lateral_grip *= 0.4
 
-	lateral = lateral.move_toward(Vector3.ZERO, grip_value * delta)
+	lateral = lateral.move_toward(Vector3.ZERO, lateral_grip * delta)
 
-	# Combine (X/Z only)
-	velocity.x = target_velocity.x + lateral.x
-	velocity.z = target_velocity.z + lateral.z
-	
-	# --- HARD HORIZONTAL SPEED CAP ---
-	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
-	var h_speed := horizontal_velocity.length()
 
-	var max_allowed := max_speed
-	if Input.is_action_pressed("boost"):
-		max_allowed = max_speed * 1.5
 
-	if h_speed > max_allowed:
-		horizontal_velocity = horizontal_velocity.normalized() * max_allowed
-		velocity.x = horizontal_velocity.x
-		velocity.z = horizontal_velocity.z
+	# Combine
+	velocity.x = target_forward.x
+	velocity.z = target_forward.z
+
+	# Apply minimal lateral correction (optional, feels good)
+	velocity.x += lateral.x
+	velocity.z += lateral.z
+
+	# Hard speed cap
+	var horizontal := Vector3(velocity.x, 0, velocity.z)
+	if horizontal.length() > max_speed:
+		horizontal = horizontal.normalized() * max_speed
+		velocity.x = horizontal.x
+		velocity.z = horizontal.z
+
 
 
 

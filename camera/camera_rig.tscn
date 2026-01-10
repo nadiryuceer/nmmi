@@ -4,16 +4,16 @@
 
 [node name="CameraRig" type="Node3D"]
 script = ExtResource("1_4ec66")
-min_zoom = 14.0
-max_zoom = 40.0
+base_zoom = 4.0
+min_zoom = 3.5
+max_zoom = 9.0
 zoom_margin = 20.0
 zoom_speed = 5.0
 forward_screen_bias = 1.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766044, 0.642788, 0, 0, -6)
+transform = Transform3D(1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 0, 0, -6)
 projection = 1
 current = true
-size = 17.0
-near = 0.1
-far = 400.0
+size = 6.5
+far = 50.0
